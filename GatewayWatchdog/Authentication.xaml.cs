@@ -34,11 +34,14 @@ namespace GatewayWatchdog
         }
 
 
-        public SessionInformation Authenticate()
+        public SessionInformation Authenticate(string url, string username, string password)
         {
-            AuthenticationEngine authenticationEngine = new AuthenticationEngine(GatewayUrlText.Text);
-            return authenticationEngine.Authenticate(AdminUsernameText.Text, AdminPasswordText.Password);
+            AuthenticationEngine authenticationEngine = new AuthenticationEngine(url);
+            
+            Session = authenticationEngine.Authenticate(username, password);           
+            Credentials.Instance.IsInitialized = true;
 
+            return Session;
 
         }
 
@@ -46,7 +49,11 @@ namespace GatewayWatchdog
         {
             try
             {
-                Session = Authenticate();
+                Credentials.Instance.Username = AdminUsernameText.Text;
+                Credentials.Instance.Password = AdminPasswordText.Password;
+                Credentials.Instance.GatewayUrl = GatewayUrlText.Text;
+
+                Session = Authenticate(Credentials.Instance.GatewayUrl, Credentials.Instance.Username, Credentials.Instance.Password);               
                 Close();
               
             }

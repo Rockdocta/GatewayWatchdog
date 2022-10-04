@@ -1,5 +1,6 @@
 ﻿using GatewayWatchdog.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace TMobileAPI
 {
@@ -39,11 +40,16 @@ namespace TMobileAPI
                     throw new Exception(authResult.result.message);
                 }
             }
+            
+
             return new SessionInformation
             {
                 GatewayUrl = GatewayUrl,
-                Token = authResult.auth.Token
+                Token = authResult.auth.Token,
+                ExpireDateTime = DateTimeOffset.FromUnixTimeSeconds(authResult.auth.Expiration).LocalDateTime
             };
         }
     }
+
+   
 }

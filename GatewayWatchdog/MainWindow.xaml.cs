@@ -46,6 +46,19 @@ namespace GatewayWatchdog
         private PingWorker pingWorker;
 
         private SessionInformation? _sessionInformation;
+        private SessionInformation Session
+        {
+            get
+            {
+                if (_sessionInformation != null)
+                {
+                    if (_sessionInformation.ExpireDateTime <= DateTime.Now)
+                        _sessionInformation = null;                    
+                }
+                return _sessionInformation;
+            }
+            
+        }
         GatewayEngine _gatewayEngine = new GatewayEngine();
      
         public MainWindow()
@@ -222,14 +235,14 @@ namespace GatewayWatchdog
             }
         }
 
-        private async void RestartGatewayBtn_Click(object sender, RoutedEventArgs e)
+        private void RestartGatewayBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (_sessionInformation == null)
+                if (Session == null)
                     Authenticate();
 
-                if (_sessionInformation != null)
+                if (Session != null)
                 {
 
                     var confirmResponse = MessageBox.Show("This will reboot the gateway, your internet connection will be down for about 2 minutes. Do you wish to proceed?", "Confirm reboot", MessageBoxButton.YesNo);
@@ -265,13 +278,16 @@ namespace GatewayWatchdog
         {
             try
             {
-                if (_sessionInformation == null)
+                if (Session == null)
                     Authenticate();
 
-                if (_sessionInformation != null)
+                if (Session != null)
                 {
-                    var telemetryData = await _gatewayEngine.GetAll(_sessionInformation);
-                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                     
+                     var telemetryData = await _gatewayEngine.GetAll(_sessionInformation);                    
+                    var message = JsonConvert.SerializeObject(telemetryData, Formatting.Indented);
+                    RawDataViewer rawDataViewer = new RawDataViewer(message);                    
+                    rawDataViewer.ShowDialog();
                 }
             }
             catch (Exception exc)
@@ -285,13 +301,15 @@ namespace GatewayWatchdog
         {
             try
             {
-                if (_sessionInformation == null)
+                if (Session == null)
                     Authenticate();
 
-                if (_sessionInformation != null)
+                if (Session != null)
                 {
                     var telemetryData = await _gatewayEngine.GetCells(_sessionInformation);
-                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                    var message = JsonConvert.SerializeObject(telemetryData, Formatting.Indented);
+                    RawDataViewer rawDataViewer = new RawDataViewer(message);
+                    rawDataViewer.ShowDialog();
                 }
             }
             catch (Exception exc)
@@ -306,13 +324,15 @@ namespace GatewayWatchdog
             {
 
 
-                if (_sessionInformation == null)
+                if (Session == null)
                     Authenticate();
 
-                if (_sessionInformation != null)
+                if (Session != null)
                 {
                     var telemetryData = await _gatewayEngine.GetDevices(_sessionInformation);
-                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                    var message = JsonConvert.SerializeObject(telemetryData, Formatting.Indented);
+                    RawDataViewer rawDataViewer = new RawDataViewer(message);
+                    rawDataViewer.ShowDialog();
                 }
             }
             catch (Exception exc)
@@ -327,7 +347,12 @@ namespace GatewayWatchdog
             try
             {
                 Authentication authenticate = new Authentication();
-                authenticate.ShowDialog();
+                if (Credentials.Instance.IsInitialized == false)
+                {
+                    authenticate.ShowDialog();
+                }
+                else
+                    authenticate.Authenticate(Credentials.Instance.GatewayUrl, Credentials.Instance.Username, Credentials.Instance.Password);
 
                 _sessionInformation = authenticate.Session;
             }
@@ -339,10 +364,10 @@ namespace GatewayWatchdog
 
         private void TabItem_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (_sessionInformation == null)
+            if (Session == null)
                 Authenticate();
 
-            if (_sessionInformation != null)
+            if (Session != null)
                 SIMInformationControl.Initialize(_sessionInformation);           
         }
     }

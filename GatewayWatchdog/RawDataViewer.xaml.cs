@@ -23,5 +23,15 @@ namespace GatewayWatchdog
         {
             InitializeComponent();
         }
+        public RawDataViewer(string message)
+        {
+            InitializeComponent();
+            ResultsText.Text = message;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }
