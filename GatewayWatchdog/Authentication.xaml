@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GatewayWatchdog"
         mc:Ignorable="d"
-        Title="Authentication" Height="150" Width="500">
+        Title="Authentication" Height="160" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -24,8 +24,8 @@
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="5"  >Admin Password:</TextBlock>
         <PasswordBox Grid.Row="2" Grid.Column="1" Margin="5"   x:Name="AdminPasswordText"></PasswordBox>
         <StackPanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
-            <Button Margin="10" Padding="10,3" Content="OK"  Name="OKButton" Click="OKButton_Click"/>
-            <Button Margin="10" Padding="10,0" Content="Cancel"  Name="CancelButton" Click="CancelButton_Click"/>
+            <Button Margin="10" Padding="10,3" Content="OK"  IsDefault="True" Name="OKButton" Click="OKButton_Click"/>
+            <Button Margin="10" Padding="10,0" Content="Cancel" IsCancel="True" Name="CancelButton" Click="CancelButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
