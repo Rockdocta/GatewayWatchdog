@@ -102,7 +102,7 @@
                 <Button Content="Show Raw Cell Data" Name="ShowCellBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="ShowCellBtn_Click"/>
                 <Button Content="Show Raw Client Data" Name="ShowClientsBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="ShowClientsBtn_Click"/>
                 <Button Content="Restart Gateway" Name="RestartGatewayBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="RestartGatewayBtn_Click"/>
-                <Button Content="Enable Logging" Name="EnabledLoggingBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="EnabledLoggingBtn_Click"/>
+                <Button Content="Enable Logging" Name="EnableLoggingBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="EnableLoggingBtn_Click"/>
             </StackPanel>
             <TabControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
                 <TabItem Header="Device" Selector.IsSelected="True">

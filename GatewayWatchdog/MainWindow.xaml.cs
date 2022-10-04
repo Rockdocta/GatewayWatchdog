@@ -43,6 +43,7 @@ namespace GatewayWatchdog
         private DateTime nextPingTime = DateTime.MinValue;
 
         private GatewayQueryWorker queryWorker;
+        private PingWorker pingWorker;
 
         private SessionInformation? _sessionInformation;
         GatewayEngine _gatewayEngine = new GatewayEngine();
@@ -59,7 +60,19 @@ namespace GatewayWatchdog
             queryWorker = new GatewayQueryWorker();
             queryWorker.WorkerUpdate += QueryWorker_WorkerUpdate;
 
-            dispatcherTimer.Start();            
+            pingWorker = new PingWorker();
+            pingWorker.PingCompleted += PingWorker_PingCompleted;
+
+            dispatcherTimer.Start();               
+        }
+
+        private void PingWorker_PingCompleted(object? sender, PingResult e)
+        {
+            if (e.Result != null)
+            {                
+                PingResultText.Text = $"{DateTime.Now.ToLongTimeString()}: {e.Result.RoundtripTime}ms";
+            }
+            nextPingTime = DateTime.Now.AddMilliseconds(15000);
         }
 
         private void QueryWorker_WorkerUpdate(object? sender, WorkerResult e)
@@ -108,6 +121,9 @@ namespace GatewayWatchdog
 
         private void LogResult(WorkerResult result)
         {
+            if (!_enableLogging)
+                return;
+
             if (!File.Exists("GatewayLog.csv"))
                 File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
 
@@ -119,59 +135,14 @@ namespace GatewayWatchdog
         }
         private void LogResult(string result)
         {
+            if (!_enableLogging)
+                return;
+                    
             if (!File.Exists("GatewayLog.csv"))
                 File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
 
              File.AppendAllText("GatewayLog.csv", result + "\r\n");
         }
-
-        private void PingWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
-        {
-            PingResult? result = e.Result as PingResult;
-
-            if (result != null)
-            {
-                if (result.Result != null)
-                    PingResultText.Text = $"{DateTime.Now.ToLongTimeString()}: {result.Result.RoundtripTime}ms";
-            }
-            nextPingTime = DateTime.Now.AddMilliseconds(15000);
-
-        }
-
-        private void PingWorker_DoWork(object? sender, DoWorkEventArgs e)
-        {
-            IPAddress pingAddress = IPAddress.Parse("8.8.8.8");
-            try
-            {
-                var pingResult = PingTest(pingAddress);
-                e.Result = new PingResult
-                {
-                    PingUri = pingAddress,
-                    Result = pingResult
-                };
-            }
-            catch (Exception exc)
-            {
-                e.Result = new PingResult()
-                {
-                    PingUri = pingAddress,
-                    Error = exc.Message
-
-                };
-            }
-        }
-
-
-        private void GatewayWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
-        {
-            CurrentStatus.Text = e.UserState?.ToString();
-        }
-
-        private void GatewayWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
-        {
-
-        }
-
 
 
         private void DispatcherTimer_Tick(object? sender, EventArgs e)
@@ -179,8 +150,8 @@ namespace GatewayWatchdog
             if (!queryWorker.IsBusy && nextQueryTime <= DateTime.Now)
                 queryWorker.RunWorkerAsync();
 
-            //if (!pingWorker.IsBusy && nextPingTime <= DateTime.Now)
-            //    pingWorker.RunWorkerAsync();
+            if (!pingWorker.IsBusy && nextPingTime <= DateTime.Now)
+                pingWorker.RunWorkerAsync();
 
         }
 
@@ -202,13 +173,7 @@ namespace GatewayWatchdog
                    string.Join(",", deviceProps.Where(p => p.GetCustomAttributes<DisplayNameAttribute>().Select(att => att.DisplayName).FirstOrDefault() != null).Select(p => p.GetCustomAttribute<DisplayNameAttribute>().DisplayName));
         }
  
-        private PingReply PingTest(IPAddress pingUri)
-        {
-            Ping ping = new Ping();
-            PingReply reply = ping.Send(pingUri);
-
-            return reply;
-        }
+      
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -243,9 +208,10 @@ namespace GatewayWatchdog
 
         }
 
-        private void EnabledLoggingBtn_Click(object sender, RoutedEventArgs e)
+        private void EnableLoggingBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            _enableLogging = !_enableLogging;
+            EnableLoggingBtn.Content = _enableLogging ? "Disable Logging" : "Enable Logging";
         }
 
         private void ShowTelemetryBtn_Click(object sender, RoutedEventArgs e)
@@ -253,9 +219,11 @@ namespace GatewayWatchdog
             if (_sessionInformation == null)
                 Authenticate();
 
-            var telemetryData = _gatewayEngine.GetAll(_sessionInformation);
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData,Formatting.Indented));
-
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetAll(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
         
 
@@ -263,19 +231,24 @@ namespace GatewayWatchdog
         {
             if (_sessionInformation == null)
                 Authenticate();
-            
-            var telemetryData = _gatewayEngine.GetCells(_sessionInformation); 
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetCells(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
 
         private void ShowClientsBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_sessionInformation == null)
                 Authenticate();
-            
-            var telemetryData = _gatewayEngine.GetDevices(_sessionInformation);
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
 
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetDevices(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
 
         private void Authenticate()
