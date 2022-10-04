@@ -109,9 +109,14 @@ namespace GatewayWatchdog
                     
                 }
             }
-            catch (IOException exc)
+            catch (IOException exc)  // Fires if the file is unavailable
             {                
                 cachedStrings.Add(e.ResultTime.ToString("M/dd/yyyy-hh:mm:ss.fff") + "," + e.Results + "\r\n");
+            }
+            catch (Exception exc)
+            {
+                e.Results = exc.ToString();
+
             }
             finally
             {
@@ -121,38 +126,66 @@ namespace GatewayWatchdog
 
         private void LogResult(WorkerResult result)
         {
-            if (!_enableLogging)
-                return;
+            try
+            {
+                if (!_enableLogging)
+                    return;
 
-            if (!File.Exists("GatewayLog.csv"))
-                File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
+                if (!File.Exists("GatewayLog.csv"))
+                    File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
 
 
-            if (result.HasError)
-                File.AppendAllText("GatewayLog.csv", result.ResultTime.ToString("M/dd/yyyy-hh:mm:ss.fff") + "," + result.Status + "\r\n");
-            else
-                File.AppendAllText("GatewayLog.csv", result.ResultTime.ToString("M/dd/yyyy-hh:mm:ss.fff") + "," + result.Results + "\r\n");
+                if (result.HasError)
+                    File.AppendAllText("GatewayLog.csv", result.ResultTime.ToString("M/dd/yyyy-hh:mm:ss.fff") + "," + result.Status + "\r\n");
+                else
+                    File.AppendAllText("GatewayLog.csv", result.ResultTime.ToString("M/dd/yyyy-hh:mm:ss.fff") + "," + result.Results + "\r\n");
+            }
+            catch (Exception exc)
+            {
+                CurrentStatus.Text = exc.Message;
+            }
         }
         private void LogResult(string result)
         {
-            if (!_enableLogging)
-                return;
-                    
-            if (!File.Exists("GatewayLog.csv"))
-                File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
+            try
+            {
+                if (!_enableLogging)
+                    return;
 
-             File.AppendAllText("GatewayLog.csv", result + "\r\n");
+                if (!File.Exists("GatewayLog.csv"))
+                    File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
+
+                File.AppendAllText("GatewayLog.csv", result + "\r\n");
+            }
+            catch (AggregateException exc)
+            {
+                CurrentStatus.Text = String.Join(",", exc.InnerExceptions.Select(e => e.Message));
+            }
+            catch (Exception exc)
+            {
+                CurrentStatus.Text = exc.Message;
+            }
         }
 
 
         private void DispatcherTimer_Tick(object? sender, EventArgs e)
         {
-            if (!queryWorker.IsBusy && nextQueryTime <= DateTime.Now)
-                queryWorker.RunWorkerAsync();
+            try
+            {
+                if (!queryWorker.IsBusy && nextQueryTime <= DateTime.Now)
+                    queryWorker.RunWorkerAsync();
 
-            if (!pingWorker.IsBusy && nextPingTime <= DateTime.Now)
-                pingWorker.RunWorkerAsync();
-
+                if (!pingWorker.IsBusy && nextPingTime <= DateTime.Now)
+                    pingWorker.RunWorkerAsync();
+            }
+            catch (AggregateException exc)
+            {
+                CurrentStatus.Text = String.Join(",", exc.InnerExceptions.Select(e => e.Message));
+            }
+            catch (Exception exc)
+            {
+                CurrentStatus.Text = exc.Message;
+            }
         }
 
 
@@ -177,9 +210,16 @@ namespace GatewayWatchdog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.DataContext = GatewayViewModel;
-            UserAdminGrid.DataContext = MainViewModel;
-            DeviceInfoControl.GatewayViewModel = GatewayViewModel;
+            try
+            {
+                this.DataContext = GatewayViewModel;
+                UserAdminGrid.DataContext = MainViewModel;
+                DeviceInfoControl.GatewayViewModel = GatewayViewModel;
+            }
+            catch (Exception exc)
+            {
+                CurrentStatus.Text = exc.Message;
+            }
         }
 
         private async void RestartGatewayBtn_Click(object sender, RoutedEventArgs e)
@@ -193,7 +233,7 @@ namespace GatewayWatchdog
                 {
 
                     var confirmResponse = MessageBox.Show("This will reboot the gateway, your internet connection will be down for about 2 minutes. Do you wish to proceed?", "Confirm reboot", MessageBoxButton.YesNo);
-                    if (confirmResponse != MessageBoxResult.Yes)
+                    if (confirmResponse == MessageBoxResult.Yes)
                     {
                         _gatewayEngine.Reboot(_sessionInformation);
                     }
@@ -210,53 +250,91 @@ namespace GatewayWatchdog
 
         private void EnableLoggingBtn_Click(object sender, RoutedEventArgs e)
         {
-            _enableLogging = !_enableLogging;
-            EnableLoggingBtn.Content = _enableLogging ? "Disable Logging" : "Enable Logging";
+            try
+            {
+                _enableLogging = !_enableLogging;
+                EnableLoggingBtn.Content = _enableLogging ? "Disable Logging" : "Enable Logging";
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred on Enable Logging: " + exc.Message);
+            }
         }
 
-        private void ShowTelemetryBtn_Click(object sender, RoutedEventArgs e)
+        private async void ShowTelemetryBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_sessionInformation == null)
-                Authenticate();
-
-            if (_sessionInformation != null)
+            try
             {
-                var telemetryData = _gatewayEngine.GetAll(_sessionInformation);
-                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                if (_sessionInformation == null)
+                    Authenticate();
+
+                if (_sessionInformation != null)
+                {
+                    var telemetryData = await _gatewayEngine.GetAll(_sessionInformation);
+                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred: " + exc.Message);
             }
         }
         
 
-        private void ShowCellBtn_Click(object sender, RoutedEventArgs e)
+        private async void ShowCellBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_sessionInformation == null)
-                Authenticate();
-
-            if (_sessionInformation != null)
+            try
             {
-                var telemetryData = _gatewayEngine.GetCells(_sessionInformation);
-                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                if (_sessionInformation == null)
+                    Authenticate();
+
+                if (_sessionInformation != null)
+                {
+                    var telemetryData = await _gatewayEngine.GetCells(_sessionInformation);
+                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred: " + exc.Message);
             }
         }
 
-        private void ShowClientsBtn_Click(object sender, RoutedEventArgs e)
+        private async void ShowClientsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_sessionInformation == null)
-                Authenticate();
-
-            if (_sessionInformation != null)
+            try
             {
-                var telemetryData = _gatewayEngine.GetDevices(_sessionInformation);
-                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+
+
+                if (_sessionInformation == null)
+                    Authenticate();
+
+                if (_sessionInformation != null)
+                {
+                    var telemetryData = await _gatewayEngine.GetDevices(_sessionInformation);
+                    MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+                }
             }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred: " + exc.Message);
+            }
+        
         }
 
         private void Authenticate()
         {
-            Authentication authenticate = new Authentication();
-            authenticate.ShowDialog();
+            try
+            {
+                Authentication authenticate = new Authentication();
+                authenticate.ShowDialog();
 
-            _sessionInformation = authenticate.Session;
+                _sessionInformation = authenticate.Session;
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred: " + exc.Message);
+            }
         }
 
         private void TabItem_GotFocus(object sender, RoutedEventArgs e)

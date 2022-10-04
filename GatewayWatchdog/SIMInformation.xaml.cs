@@ -38,10 +38,9 @@ namespace GatewayWatchdog
 
         public void Initialize(SessionInformation session)
         {
-            GatewayEngine gatewayEngine = new GatewayEngine();
-            
-            var simInfo = gatewayEngine.GetSimInformation(session);
-            ViewModel.Initialize(simInfo);            
+            GatewayEngine gatewayEngine = new GatewayEngine();            
+            var task = gatewayEngine.GetSimInformation(session);
+            task.ContinueWith(t => ViewModel.Initialize(t.Result));            
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)

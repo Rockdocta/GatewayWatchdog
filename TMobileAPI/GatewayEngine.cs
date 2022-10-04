@@ -6,25 +6,25 @@ namespace TMobileAPI
 
     public class GatewayEngine
     {
-        public ClientsRoot GetDevices(SessionInformation session)
+        public async Task<ClientsRoot> GetDevices(SessionInformation session)
         {
-            return GetTelemetryData<ClientsRoot>(session);
+            return await GetTelemetryData<ClientsRoot>(session);
         }
-        public CellRoot GetCells(SessionInformation session)
+        public async Task<CellRoot> GetCells(SessionInformation session)
         {
-            return GetTelemetryData<CellRoot>(session);
+            return await GetTelemetryData<CellRoot>(session);
         }
 
-        public TelemetryData GetAll(SessionInformation session)
+        public async Task<TelemetryData> GetAll(SessionInformation session)
         {
-            return GetTelemetryData<TelemetryData>(session);    
+            return await GetTelemetryData<TelemetryData>(session);    
         }
-        public SimRoot GetSimInformation(SessionInformation session)
+        public async Task<SimRoot> GetSimInformation(SessionInformation session)
         {
-            return GetTelemetryData<SimRoot>(session);
+            return await GetTelemetryData<SimRoot>(session);
            
         }
-        public Root GetGatewayInformation(string gatewayUrl)
+        public async Task<Root> GetGatewayInformation(string gatewayUrl)
         {
             var telemetryRequest = new HttpRequestMessage(HttpMethod.Get, $"{gatewayUrl}/TMI/v1/gateway?get=all");
 
@@ -33,12 +33,12 @@ namespace TMobileAPI
             {
                 Timeout = TimeSpan.FromSeconds(5)
             };
-            var result = client.Send(telemetryRequest);
-            return JsonConvert.DeserializeObject<Root>(result.Content.ReadAsStringAsync().Result);
+            var result = await client.SendAsync(telemetryRequest);
+            return JsonConvert.DeserializeObject<Root>(await result.Content.ReadAsStringAsync());
             
         }
 
-        private T GetTelemetryData<T>(SessionInformation session)
+        private async Task<T> GetTelemetryData<T>(SessionInformation session)
         {
                     
             var telemetryRequest = new HttpRequestMessage(HttpMethod.Get, $"{session.GatewayUrl}/TMI/v1/network/telemetry?get=all");
@@ -49,8 +49,8 @@ namespace TMobileAPI
                 Timeout = TimeSpan.FromSeconds(5)
             };
 
-            var telemetryResponse = client.Send(telemetryRequest);
-            var telemetryJson = telemetryResponse.Content.ReadAsStringAsync().Result;
+            var telemetryResponse = await client.SendAsync(telemetryRequest);
+            var telemetryJson = await telemetryResponse.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(telemetryJson);                
            
         }

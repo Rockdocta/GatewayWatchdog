@@ -56,7 +56,7 @@ namespace GatewayWatchdog
             {
                 var bw = sender as BackgroundWorker;
                 bw.ReportProgress(1, "Sending request");
-                root = gatewayEngine.GetGatewayInformation("http://192.168.12.1");               
+                root = gatewayEngine.GetGatewayInformation("http://192.168.12.1").Result;               
                 bw.ReportProgress(2, "Parsing results");
 
                 PropertyInfo[] _4gProperties = root.signal.FourG.GetType().GetProperties();
