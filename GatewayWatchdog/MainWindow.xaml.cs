@@ -108,6 +108,9 @@ namespace GatewayWatchdog
 
         private void LogResult(WorkerResult result)
         {
+            if (!_enableLogging)
+                return;
+
             if (!File.Exists("GatewayLog.csv"))
                 File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
 
@@ -119,6 +122,9 @@ namespace GatewayWatchdog
         }
         private void LogResult(string result)
         {
+            if (!_enableLogging)
+                return;
+                    
             if (!File.Exists("GatewayLog.csv"))
                 File.WriteAllText("GatewayLog.csv", "DATE," + GetColumnNames() + "\r\n");
 
@@ -243,9 +249,10 @@ namespace GatewayWatchdog
 
         }
 
-        private void EnabledLoggingBtn_Click(object sender, RoutedEventArgs e)
+        private void EnableLoggingBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            _enableLogging = !_enableLogging;
+            EnableLoggingBtn.Content = _enableLogging ? "Disable Logging" : "Enable Logging";
         }
 
         private void ShowTelemetryBtn_Click(object sender, RoutedEventArgs e)
@@ -253,9 +260,11 @@ namespace GatewayWatchdog
             if (_sessionInformation == null)
                 Authenticate();
 
-            var telemetryData = _gatewayEngine.GetAll(_sessionInformation);
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData,Formatting.Indented));
-
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetAll(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
         
 
@@ -263,19 +272,24 @@ namespace GatewayWatchdog
         {
             if (_sessionInformation == null)
                 Authenticate();
-            
-            var telemetryData = _gatewayEngine.GetCells(_sessionInformation); 
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetCells(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
 
         private void ShowClientsBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_sessionInformation == null)
                 Authenticate();
-            
-            var telemetryData = _gatewayEngine.GetDevices(_sessionInformation);
-            MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
 
+            if (_sessionInformation != null)
+            {
+                var telemetryData = _gatewayEngine.GetDevices(_sessionInformation);
+                MessageBox.Show(JsonConvert.SerializeObject(telemetryData, Formatting.Indented));
+            }
         }
 
         private void Authenticate()
