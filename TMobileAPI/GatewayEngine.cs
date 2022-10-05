@@ -1,5 +1,6 @@
 ﻿using GatewayWatchdog.Models;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace TMobileAPI
 {
@@ -34,6 +35,10 @@ namespace TMobileAPI
                 Timeout = TimeSpan.FromSeconds(5)
             };
             var result = await client.SendAsync(telemetryRequest);
+            if (result.StatusCode != HttpStatusCode.OK)
+            {
+               throw new Exception("Error occurred while retrieving data: " + result.StatusCode + ": " + result.Content.ReadAsStringAsync().Result);
+            }
             return JsonConvert.DeserializeObject<Root>(await result.Content.ReadAsStringAsync());
             
         }

@@ -20,6 +20,8 @@ namespace GatewayWatchdog
 
         private GatewayEngine gatewayEngine;
 
+        public string GatewayUrl { get; internal set; }
+
         public GatewayQueryWorker()
         {
 
@@ -56,7 +58,7 @@ namespace GatewayWatchdog
             {
                 var bw = sender as BackgroundWorker;
                 bw.ReportProgress(1, "Sending request");
-                root = gatewayEngine.GetGatewayInformation("http://192.168.12.1").Result;               
+                root = gatewayEngine.GetGatewayInformation(GatewayUrl).Result;     
                 bw.ReportProgress(2, "Parsing results");
 
                 PropertyInfo[] _4gProperties = root.signal.FourG.GetType().GetProperties();
@@ -107,7 +109,7 @@ namespace GatewayWatchdog
                 {
                     ResultTime = currentTimeStamp,
                     HasError = true,
-                    Status = "Error: " + exc.Message + ": " + String.Join(",", exc.InnerExceptions.Select(ex => ex.Message)),
+                    Status = "Error: " + exc.Message,
                     Data = root
                 };
             }

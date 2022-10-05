@@ -23,6 +23,8 @@ namespace GatewayWatchdog.ViewModels
                 RefreshAll();
             }
         }
+
+
         public void Initialize(Root root)
         {
             FourGBand = root.signal.FourG.band;

@@ -42,8 +42,8 @@ namespace GatewayWatchdog
         private DateTime nextQueryTime = DateTime.MinValue;
         private DateTime nextPingTime = DateTime.MinValue;
 
-        private GatewayQueryWorker queryWorker;
-        private PingWorker pingWorker;
+        private readonly GatewayQueryWorker queryWorker;
+        private readonly PingWorker pingWorker;
 
         private SessionInformation? _sessionInformation;
         private SessionInformation Session
@@ -72,6 +72,7 @@ namespace GatewayWatchdog
 
             queryWorker = new GatewayQueryWorker();
             queryWorker.WorkerUpdate += QueryWorker_WorkerUpdate;
+            queryWorker.GatewayUrl = UrlText.Text;
 
             pingWorker = new PingWorker();
             pingWorker.PingCompleted += PingWorker_PingCompleted;
@@ -369,6 +370,18 @@ namespace GatewayWatchdog
 
             if (Session != null)
                 SIMInformationControl.Initialize(_sessionInformation);           
+        }
+
+        private void SetUrlBtn_Click(object sender, RoutedEventArgs e)
+        {
+            queryWorker.GatewayUrl = UrlText.Text;
+            SetUrlBtn.IsEnabled = false;
+        }
+
+        private void UrlText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (SetUrlBtn != null)
+                SetUrlBtn.IsEnabled = true;
         }
     }
 

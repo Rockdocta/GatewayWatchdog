@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:GatewayWatchdog.ViewModels"        
         mc:Ignorable="d"  
         Loaded="Window_Loaded"
-        Title="Gateway Manager" Height="330" Width="620">
+        Title="Gateway Manager" Height="340" Width="670">
     <Window.Resources>
         <local:StringEmptyConverter x:Key="StringEmptyConverter" />
         <local:VisibilityConverter x:Key="VisibilityConverter" />
@@ -23,17 +23,18 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
             <TextBlock Margin="5">Current Result:</TextBlock>
             <TextBlock Margin="5" Name="ResultTime">Time</TextBlock>
         </StackPanel>
-        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Stretch">
-            <TextBlock Margin="5">Gateway URL:</TextBlock>
-            <TextBox Margin="5" Name="UrlText">http://192.168.12.1</TextBox>
-        </StackPanel>
+        <TextBlock Grid.Column="1" Margin="5">Gateway URL:</TextBlock>
+        <TextBox Grid.Column="2" Margin="5" Name="UrlText" TextChanged="UrlText_TextChanged"
+                     Text="http://192.168.12.1" HorizontalAlignment="Stretch"></TextBox>
+        <Button Grid.Column="3" Name="SetUrlBtn" Content="Set URL" Margin="5" Click="SetUrlBtn_Click" IsEnabled="False"  />
         <StackPanel Orientation="Vertical" Grid.Row="1" Grid.RowSpan="4">
             <StackPanel Orientation="Horizontal">
                 <StackPanel Orientation="Vertical">
@@ -82,7 +83,7 @@
                 <TextBlock FontWeight="Bold" Foreground="Blue" Margin="5" x:Name="PingResultText">34ms</TextBlock>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="1" Grid.Column="1" Name="UserAdminGrid">
+        <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Name="UserAdminGrid">
             <Grid.DataContext>
                 <vm:MainViewModel />
             </Grid.DataContext>
@@ -114,9 +115,6 @@
                 <TabItem Header="Cell information"></TabItem>
             </TabControl>
         </Grid>
-        <DockPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-            <TextBlock Margin="5" x:Name="CurrentStatus">Ready</TextBlock>
-        </DockPanel>
-
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Margin="5" Padding="2" x:Name="CurrentStatus" Background="#FFF2F2F2" />
     </Grid>
 </Window>
