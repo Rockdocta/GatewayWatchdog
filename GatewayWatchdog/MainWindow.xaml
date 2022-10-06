@@ -24,6 +24,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
@@ -31,10 +32,10 @@
             <TextBlock Margin="5">Current Result:</TextBlock>
             <TextBlock Margin="5" Name="ResultTime">Time</TextBlock>
         </StackPanel>
-        <TextBlock Grid.Column="1" Margin="5">Gateway URL:</TextBlock>
-        <TextBox Grid.Column="2" Margin="5" Name="UrlText" TextChanged="UrlText_TextChanged"
-                     Text="http://192.168.12.1" HorizontalAlignment="Stretch"></TextBox>
-        <Button Grid.Column="3" Name="SetUrlBtn" Content="Set URL" Margin="5" Click="SetUrlBtn_Click" IsEnabled="False"  />
+        <TextBlock Grid.Column="1" Margin="5">Gateway IP:</TextBlock>
+        <TextBox Grid.Column="2" Margin="5" Name="UrlText" TextChanged="UrlText_TextChanged" PreviewKeyDown="UrlText_PreviewKeyDown"
+                     Text="192.168.12.1" HorizontalAlignment="Left" Width="100"></TextBox>
+        <Button Grid.Column="3" Name="SetUrlBtn" Content="Set URL" Width="50" HorizontalAlignment="Left" Margin="5" Click="SetUrlBtn_Click" IsEnabled="False"  />
         <StackPanel Orientation="Vertical" Grid.Row="1" Grid.RowSpan="4">
             <StackPanel Orientation="Horizontal">
                 <StackPanel Orientation="Vertical">
@@ -83,7 +84,7 @@
                 <TextBlock FontWeight="Bold" Foreground="Blue" Margin="5" x:Name="PingResultText">34ms</TextBlock>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Name="UserAdminGrid">
+        <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Name="UserAdminGrid">
             <Grid.DataContext>
                 <vm:MainViewModel />
             </Grid.DataContext>
@@ -102,6 +103,7 @@
                 <Button Content="Show Raw Telemetry Data" Name="ShowTelemetryBtn" Margin="5" Padding="5" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ShowTelemetryBtn_Click"/>
                 <Button Content="Show Raw Cell Data" Name="ShowCellBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="ShowCellBtn_Click"/>
                 <Button Content="Show Raw Client Data" Name="ShowClientsBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="ShowClientsBtn_Click"/>
+                <Button Content="Show Network Config" Name="ShowNetworkConfigBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="ShowNetworkConfigBtn_Click"/>
                 <Button Content="Restart Gateway" Name="RestartGatewayBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="RestartGatewayBtn_Click"/>
                 <Button Content="Enable Logging" Name="EnableLoggingBtn" Margin="5" Padding="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="EnableLoggingBtn_Click"/>
             </StackPanel>

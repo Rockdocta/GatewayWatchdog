@@ -39,13 +39,20 @@ namespace TMobileAPI
             {
                throw new Exception("Error occurred while retrieving data: " + result.StatusCode + ": " + result.Content.ReadAsStringAsync().Result);
             }
-            return JsonConvert.DeserializeObject<Root>(await result.Content.ReadAsStringAsync());
+
+            var json = await result.Content.ReadAsStringAsync();
+            if (!json.Contains("\"manufacturer\": \"Arcadyan\""))
+            {
+                throw new Exception("Invalid source retrieved, check gateway IP address.");
+            }
+            
+            return JsonConvert.DeserializeObject<Root>(await result.Content.ReadAsStringAsync());                      
             
         }
 
         private async Task<T> GetTelemetryData<T>(SessionInformation session)
         {
-                    
+
             var telemetryRequest = new HttpRequestMessage(HttpMethod.Get, $"{session.GatewayUrl}/TMI/v1/network/telemetry?get=all");
             telemetryRequest.Headers.Add("Authorization", $"Bearer {session.Token}");
 
@@ -56,8 +63,24 @@ namespace TMobileAPI
 
             var telemetryResponse = await client.SendAsync(telemetryRequest);
             var telemetryJson = await telemetryResponse.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(telemetryJson);                
-           
+            return JsonConvert.DeserializeObject<T>(telemetryJson);
+
+        }
+        public async Task<string> GetAccessPointData(SessionInformation session)
+        {
+
+            var telemetryRequest = new HttpRequestMessage(HttpMethod.Get, $"{session.GatewayUrl}/TMI/v1/network/configuration?get=ap");
+            telemetryRequest.Headers.Add("Authorization", $"Bearer {session.Token}");
+
+            HttpClient client = new()
+            {
+                Timeout = TimeSpan.FromSeconds(5)
+            };
+
+            var telemetryResponse = await client.SendAsync(telemetryRequest);
+            var telemetryJson = await telemetryResponse.Content.ReadAsStringAsync();
+            return telemetryJson;
+
         }
 
 

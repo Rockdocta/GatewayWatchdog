@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using TMobileAPI;
 
@@ -72,7 +73,7 @@ namespace GatewayWatchdog
 
             queryWorker = new GatewayQueryWorker();
             queryWorker.WorkerUpdate += QueryWorker_WorkerUpdate;
-            queryWorker.GatewayUrl = UrlText.Text;
+            queryWorker.GatewayUrl = "http://" + UrlText.Text;
 
             pingWorker = new PingWorker();
             pingWorker.PingCompleted += PingWorker_PingCompleted;
@@ -374,7 +375,7 @@ namespace GatewayWatchdog
 
         private void SetUrlBtn_Click(object sender, RoutedEventArgs e)
         {
-            queryWorker.GatewayUrl = UrlText.Text;
+            queryWorker.GatewayUrl = "http://" + UrlText.Text;
             SetUrlBtn.IsEnabled = false;
         }
 
@@ -382,6 +383,41 @@ namespace GatewayWatchdog
         {
             if (SetUrlBtn != null)
                 SetUrlBtn.IsEnabled = true;
+        }
+
+        private void UrlText_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (!((e.Key >= Key.D0 && e.Key <= Key.D9) ||
+                (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9) ||
+                e.Key == Key.Decimal || e.Key == Key.OemPeriod || e.Key == Key.Back))
+            {
+                e.Handled = true;
+            }
+            
+            if (UrlText.Text.Count(c => c == '.') >= 3 && (e.Key == Key.OemPeriod || e.Key == Key.Decimal))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private async void ShowNetworkConfigBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Session == null)
+                    Authenticate();
+
+                if (Session != null)
+                {
+                    var telemetryData = await _gatewayEngine.GetAccessPointData(_sessionInformation);                    
+                    RawDataViewer rawDataViewer = new RawDataViewer(telemetryData);
+                    rawDataViewer.ShowDialog();
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error occurred: " + exc.Message);
+            }
         }
     }
 
